@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import type { TableProps } from 'antd';
 import { Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
 import {useCategories} from "./useCategories";
@@ -67,6 +67,10 @@ const CategoryComponent = () => {
     const { CategoryIsEditing,editCategory } = useUpdateCategory();
     const [editingKey, setEditingKey] = useState('');
 
+    useEffect(() => {
+            console.log(categories, 'categories')
+        }
+    )
     const isEditing = (record: Item) => record.id === editingKey;
     const save = async (key: React.Key) => {
 
@@ -182,20 +186,20 @@ const CategoryComponent = () => {
         <>
            <CategoryModal />
         <Form form={form} component={false}>
-            <Table
-                components={{
-                    body: {
-                        cell: EditableCell,
-                    },
-                }}
-                bordered
-                dataSource={categories}
-                columns={mergedColumns}
-                rowClassName="editable-row"
-                pagination={{
-                    onChange: cancel,
-                }}
-            />
+                <Table
+                    components={{
+                        body: {
+                            cell: EditableCell,
+                        },
+                    }}
+                    bordered
+                    dataSource={categories ? categories.pcategoryDtoList : null}
+                    columns={mergedColumns}
+                    rowClassName="editable-row"
+                    pagination={{
+                        onChange: cancel,
+                    }}
+                />
         </Form>
     </>
     );
