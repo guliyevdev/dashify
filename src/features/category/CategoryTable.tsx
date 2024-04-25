@@ -1,12 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import type { TableProps } from 'antd';
-import { Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
+import { Form, Input, InputNumber, Popconfirm, Table, Typography,Switch, TableProps } from 'antd';
 import {useCategories} from "./useCategories";
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Flex  } from 'antd';
 import CategoryModal from "./AddCategory";
 
-import {useUpdateCategory} from "./useUpdateCategory";
+import {useUpdateCategory, useUpdateCategoryActivity} from "./useUpdateCategory";
 interface Item {
     id: string;
     name: string;
@@ -15,7 +12,6 @@ interface Item {
     activity: boolean;
 }
 
-const originData: Item[] = [];
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
     editing: boolean;
     dataIndex: string;
@@ -62,23 +58,36 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
 const CategoryComponent = () => {
     const [form] = Form.useForm();
-    const [data, setData] = useState(originData);
-    const { categories, isLoading } = useCategories();
     const { CategoryIsEditing,editCategory } = useUpdateCategory();
+    const { CategoryActivityIsEditing,editCategoryActivity } = useUpdateCategoryActivity();
     const [editingKey, setEditingKey] = useState('');
+    const [pagination, setPagination] = useState({
+        total: 0,
+        current: 1,
+        pageSize: 10,
+    });
+
+    const { categories, isLoading,refetch } = useCategories(pagination.pageSize,pagination.current);
 
     useEffect(() => {
-            console.log(categories, 'categories')
+        if (categories) {
+            setPagination({
+                total: categories.totalElements,
+                current: categories.currentPage,
+                pageSize: categories.pageSize,
+            });
         }
-    )
+    },[categories]);
+    useEffect(() => {
+        refetch()
+    }, [pagination]);
     const isEditing = (record: Item) => record.id === editingKey;
     const save = async (key: React.Key) => {
 
         try {
             const row = (await form.validateFields()) as Item;
             row.id = key as number;
-            const editedCategory = editCategory(row)
-            console.log(data)
+            editCategory(row)
             setEditingKey('');
         } catch (errInfo) {
             console.log('Validate Failed:', errInfo);
@@ -116,6 +125,23 @@ const CategoryComponent = () => {
     };
 
 
+    const handleActivityChange = (id: string, checked: boolean) =>{
+        const data = [
+            {
+                "activity": checked,
+                "id": id
+            }
+        ]
+        editCategoryActivity(data)
+    }
+    const handleTableChange = (data) => {
+        const { current, pageSize } = data;
+        setPagination(prevPagination => ({
+            ...prevPagination,
+            current: current,
+        }))
+    };
+
 
     const columns = [
         {
@@ -140,7 +166,9 @@ const CategoryComponent = () => {
             title: 'Activity',
             dataIndex: 'activity',
             width: '15%',
-            editable: true,
+            render: (_: any, record: Item) => (
+                    <Switch  checked={record.activity} onChange={(e) => handleActivityChange(record.id, e)}/>
+            ),
         },
         {
             title: 'operation',
@@ -184,8 +212,8 @@ const CategoryComponent = () => {
 
     return (
         <>
-           <CategoryModal />
-        <Form form={form} component={false}>
+                <CategoryModal />
+            <Form form={form} component={false}>
                 <Table
                     components={{
                         body: {
@@ -196,12 +224,11 @@ const CategoryComponent = () => {
                     dataSource={categories ? categories.pcategoryDtoList : null}
                     columns={mergedColumns}
                     rowClassName="editable-row"
-                    pagination={{
-                        onChange: cancel,
-                    }}
+                    pagination={pagination}
+                    onChange={handleTableChange}
                 />
-        </Form>
-    </>
+            </Form>
+        </>
     );
 };
 

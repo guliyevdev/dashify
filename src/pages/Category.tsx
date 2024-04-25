@@ -4,7 +4,11 @@ function Category() {
     return (
             <>
                 <Header />
-                <CategoryTable />
+                <div className="page-body">
+                    <div className="container-xl">
+                        <CategoryTable />
+                    </div>
+                </div>
             </>
     );
 }

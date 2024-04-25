@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {updateCategory} from "../../services/apiCategory";
+import {updateCategory,updateCategoryActivity} from "../../services/apiCategory";
 import toast from "react-hot-toast";
 
 export function useUpdateCategory() {
-    console.log('useupatecategory')
     const quryClient = useQueryClient();
 
     const { mutate: editCategory, isLoading: CategoryIsEditing } = useMutation({
@@ -16,6 +15,21 @@ export function useUpdateCategory() {
         },
         onError: (err) => toast.error(err.message),
     });
-
     return { editCategory, CategoryIsEditing };
+}
+export function useUpdateCategoryActivity() {
+    const quryClient = useQueryClient();
+
+    const { mutate: editCategoryActivity, isLoading: CategoryActivityIsEditing } = useMutation({
+        mutationFn: (data) => updateCategoryActivity(data),
+        onSuccess: () => {
+            toast.success("category successfully edited");
+            quryClient.invalidateQueries({
+                queryKey: ["categories"],
+            });
+        },
+        onError: (err) => toast.error(err.message),
+    });
+
+    return { editCategoryActivity, CategoryActivityIsEditing };
 }

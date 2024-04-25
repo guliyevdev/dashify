@@ -4,7 +4,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Login from './pages/Login.tsx'
 import Index from './pages/Index.tsx'
 import Category from "./pages/Category.tsx";
-import category from "./pages/Category.tsx";
+import "./index.css"
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
